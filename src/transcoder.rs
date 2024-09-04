@@ -36,7 +36,7 @@ impl Transcoder {
     }
 
     pub fn to_m3u8(&self) -> Result<Output, std::io::Error> {
-        Command::new("ffmpeg")
+        let output = Command::new("ffmpeg")
             .arg("-i")
             .arg(&self.input_file)
             .arg("-codec:")
@@ -52,7 +52,8 @@ impl Transcoder {
             .arg("-progress")
             .arg(&self.log_file)
             .arg(&self.output_file)
-            .output()
+            .output()?;
+        Ok(output)
     }
 
     pub(crate) fn get_duration(&self) -> f64 {
@@ -134,7 +135,6 @@ impl Transcoder {
             }
 
             self.progress = (percent * 100.0) as u32;
-
             notifier(&self);
             sleep(Duration::from_millis(300));
         }
