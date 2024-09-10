@@ -17,15 +17,15 @@ pub struct Transcoder {
 }
 
 impl Transcoder {
-    pub fn new(input_file: String) -> Self {
+    pub fn new(input_file: String, output_path: String) -> Self {
         let file_name = Path::new(&input_file)
             .file_name()
             .unwrap()
             .to_str()
             .unwrap();
 
-        let file_path = format!("{}@{}", input_file.replace(&file_name, ""), &file_name);
-        let _ = fs::create_dir(&file_path);
+        let file_path = format!("{}/@{}", output_path, &file_name);
+        let _ = fs::create_dir_all(&file_path);
 
         return Self {
             output_file: format!("{}/{}.m3u8", &file_path, file_name),

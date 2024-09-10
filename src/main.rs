@@ -18,7 +18,10 @@ fn main() {
     if let Ok(reader) = fs::read_dir(args.input_path) {
         let mut transcoders = reader.fold(vec![], |mut acc, item| {
             if let Ok(entry) = item {
-                let transcoder = Transcoder::new(entry.path().to_str().unwrap().to_owned());
+                let transcoder = Transcoder::new(
+                    entry.path().to_str().unwrap().to_owned(),
+                    args.output_path.to_owned(),
+                );
                 acc.push(transcoder);
             }
             acc
