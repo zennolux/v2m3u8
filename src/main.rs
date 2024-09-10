@@ -24,6 +24,7 @@ fn main() {
             let mut data = transcoders.clone();
             let listener = thread::spawn(move || {
                 let progress_bar = ProgressBar::new(data.len() as u64);
+                println!("Transcoding in progress, this may take a moment.");
                 data.iter_mut().enumerate().for_each(|(idx, transcoder)| {
                     transcoder.listen_progress(|transcoder| {
                         transcoders[idx].progress = transcoder.progress;
