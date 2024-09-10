@@ -24,7 +24,9 @@ impl Transcoder {
             .to_str()
             .unwrap();
 
-        let file_path = format!("{}/@{}", output_path, &file_name);
+        let suffix = file_name.split(".").last().unwrap();
+        let file_name = file_name.replace(&format!(".{}", suffix), "");
+        let file_path = format!("{}/{}", output_path, &file_name);
         let _ = fs::create_dir_all(&file_path);
 
         return Self {
