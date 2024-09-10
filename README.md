@@ -10,8 +10,9 @@
 <center>A command-line tool for transcoding pretty much any other kind of video to m3u8.</center>
 
 ### Features
-* Progress bar support absolutely.
-* Transcoding with giving input-path, not just a single file.
+* Transcoding with giving input-path
+* Feel free to customize output-path
+* With progress bar support absolutely
 
 ### Requirements
 * You are supposed to have [ffmpeg](https://www.ffmpeg.org/download.html) installed
