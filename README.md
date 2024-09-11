@@ -10,6 +10,7 @@
 <center>A command-line tool for transcoding pretty much any other kind of video to m3u8.</center>
 
 ### Features
+* Completely local environment
 * Transcoding with giving input-path
 * Feel free to customize output-path
 * With progress bar support absolutely
@@ -20,5 +21,4 @@
 ### Usage
 ```bash
 v2m3u8 --help
-
 ```
