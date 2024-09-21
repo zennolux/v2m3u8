@@ -14,7 +14,5 @@
 ### Requirements
 * You are supposed to have [ffmpeg](https://www.ffmpeg.org/download.html) installed
 
-### Usage
-```bash
-v2m3u8 --help
-```
+### ShowCase
+![demo](https://github.com/user-attachments/assets/1fabdb83-8878-45a7-8a86-b1d5121a0686)
