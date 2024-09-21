@@ -1,7 +1,8 @@
 use regex::Regex;
 
 use std::{
-    fs::{self},
+    fs,
+    num::ParseFloatError,
     path::Path,
     process::{Command, Output, Stdio},
     thread::sleep,
@@ -58,7 +59,7 @@ impl Transcoder {
         Ok(output)
     }
 
-    pub(crate) fn get_duration(&self) -> f64 {
+    pub(crate) fn get_duration(&self) -> Result<f64, ParseFloatError> {
         let duration = Command::new("ffprobe")
             .arg("-v")
             .arg("error")
@@ -71,7 +72,7 @@ impl Transcoder {
             .output();
 
         if let Ok(dur) = duration {
-            return format!(
+            let duration = format!(
                 "{:?}.00",
                 String::from_utf8(dur.stdout)
                     .unwrap()
@@ -80,17 +81,20 @@ impl Transcoder {
                     .parse::<usize>()
                     .unwrap()
             )
-            .parse::<f64>()
-            .unwrap();
+            .parse::<f64>()?;
+            return Ok(duration);
         }
-        0.0
+        Ok(0.0)
     }
 
-    pub(crate) fn parse_progress_time<'a>(&'a self, content: &'a str) -> f64 {
+    pub(crate) fn parse_progress_time<'a>(
+        &'a self,
+        content: &'a str,
+    ) -> Result<f64, ParseFloatError> {
         let reg = Regex::new(r"out_time_ms=(\d+)").unwrap();
 
         if let Some(caps) = reg.captures_iter(&content).last() {
-            return format!(
+            let progress_time = format!(
                 "{:?}.00",
                 caps.get(0)
                     .unwrap()
@@ -101,20 +105,19 @@ impl Transcoder {
                     .parse::<usize>()
                     .unwrap()
             )
-            .parse::<f64>()
-            .unwrap();
+            .parse::<f64>()?;
+            return Ok(progress_time);
         }
-        0.0
+        Ok(0.0)
     }
 
-    pub(crate) fn calc_progress(progress_time: f64, duration: f64) -> f64 {
+    pub(crate) fn calc_progress(progress_time: f64, duration: f64) -> Result<f64, ParseFloatError> {
         if progress_time == 0.0 {
-            return progress_time;
+            return Ok(0.0);
         }
 
-        format!("{:.2}", progress_time / duration)
-            .parse::<f64>()
-            .unwrap()
+        let progress = format!("{:.2}", progress_time / duration).parse::<f64>()?;
+        Ok(progress)
     }
 
     pub fn listen_progress<F>(&mut self, mut notifier: F)
@@ -122,23 +125,32 @@ impl Transcoder {
         F: FnMut(&Self),
     {
         let mut end = false;
-        let duration = self.get_duration();
 
-        while !end {
-            let Ok(content) = fs::read_to_string(&self.log_file) else {
-                continue;
-            };
-            let progress_time = self.parse_progress_time(&content);
-            let mut percent = Transcoder::calc_progress(progress_time, duration);
+        match self.get_duration() {
+            Ok(duration) => {
+                while !end {
+                    let Ok(content) = fs::read_to_string(&self.log_file) else {
+                        continue;
+                    };
+                    let Ok(progress_time) = self.parse_progress_time(&content) else {
+                        break;
+                    };
+                    let Ok(mut percent) = Transcoder::calc_progress(progress_time, duration) else {
+                        break;
+                    };
+                    if content.contains("progress=end") {
+                        percent = 1.0;
+                        end = true;
+                    }
 
-            if content.contains("progress=end") {
-                percent = 1.0;
-                end = true;
+                    self.progress = (percent * 100.0) as u32;
+                    notifier(&self);
+                    sleep(Duration::from_millis(300));
+                }
             }
-
-            self.progress = (percent * 100.0) as u32;
-            notifier(&self);
-            sleep(Duration::from_millis(300));
+            Err(err) => {
+                panic!("An error happened while get duration: {}", err);
+            }
         }
     }
 }
