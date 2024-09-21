@@ -14,5 +14,5 @@
 ### Requirements
 * You are supposed to have [ffmpeg](https://www.ffmpeg.org/download.html) installed
 
-### ShowCase
+### Showcase
 ![demo](https://github.com/user-attachments/assets/1fabdb83-8878-45a7-8a86-b1d5121a0686)
