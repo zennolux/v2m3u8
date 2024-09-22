@@ -1,6 +1,7 @@
 use regex::Regex;
 
 use std::{
+    error::Error,
     fs,
     num::ParseFloatError,
     path::Path,
@@ -59,7 +60,7 @@ impl Transcoder {
         Ok(output)
     }
 
-    pub(crate) fn get_duration(&self) -> Result<f64, ParseFloatError> {
+    pub(crate) fn get_duration(&self) -> Result<f64, Box<dyn Error>> {
         let duration = Command::new("ffprobe")
             .arg("-v")
             .arg("error")
@@ -74,12 +75,10 @@ impl Transcoder {
         if let Ok(dur) = duration {
             let duration = format!(
                 "{:?}.00",
-                String::from_utf8(dur.stdout)
-                    .unwrap()
+                String::from_utf8(dur.stdout)?
                     .trim()
                     .replace(".", "")
-                    .parse::<usize>()
-                    .unwrap()
+                    .parse::<usize>()?
             )
             .parse::<f64>()?;
             return Ok(duration);
@@ -90,7 +89,7 @@ impl Transcoder {
     pub(crate) fn parse_progress_time<'a>(
         &'a self,
         content: &'a str,
-    ) -> Result<f64, ParseFloatError> {
+    ) -> Result<f64, Box<dyn Error>> {
         let reg = Regex::new(r"out_time_ms=(\d+)").unwrap();
 
         if let Some(caps) = reg.captures_iter(&content).last() {
@@ -102,8 +101,7 @@ impl Transcoder {
                     .split("=")
                     .last()
                     .unwrap()
-                    .parse::<usize>()
-                    .unwrap()
+                    .parse::<usize>()?
             )
             .parse::<f64>()?;
             return Ok(progress_time);
