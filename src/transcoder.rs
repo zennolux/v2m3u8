@@ -122,10 +122,9 @@ impl Transcoder {
     where
         F: FnMut(&Self),
     {
-        let mut end = false;
-
         match self.get_duration() {
             Ok(duration) => {
+                let mut end = false;
                 while !end {
                     let Ok(content) = fs::read_to_string(&self.log_file) else {
                         continue;
